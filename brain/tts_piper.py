@@ -148,14 +148,14 @@ async def main(model_path: str) -> None:
     voice = _load_voice(model_path)
     voice_name = Path(model_path).stem  # e.g. "en_US-lessac-medium"
     info = _build_info(voice_name)
-    executor = ThreadPoolExecutor(max_workers=1)
 
-    def handler_factory(*args, **kwargs):
-        return TtsPiperHandler(*args, voice=voice, executor=executor, info=info, **kwargs)
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        def handler_factory(*args, **kwargs):
+            return TtsPiperHandler(*args, voice=voice, executor=executor, info=info, **kwargs)
 
-    server = AsyncServer.from_uri(f"tcp://{config.BIND_HOST}:{config.TTS_PORT}")
-    _LOGGER.info("TTS server listening on %s:%s  model=%s", config.BIND_HOST, config.TTS_PORT, voice_name)
-    await server.run(handler_factory)
+        server = AsyncServer.from_uri(f"tcp://{config.BIND_HOST}:{config.TTS_PORT}")
+        _LOGGER.info("TTS server listening on %s:%s  model=%s", config.BIND_HOST, config.TTS_PORT, voice_name)
+        await server.run(handler_factory)
 
 
 if __name__ == "__main__":

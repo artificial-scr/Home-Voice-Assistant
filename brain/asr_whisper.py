@@ -168,14 +168,14 @@ async def main(model_name: str, device: str) -> None:
     _LOGGER.info("Model loaded.")
 
     info = _build_info(model_name)
-    executor = ThreadPoolExecutor(max_workers=1)
 
-    def handler_factory(*args, **kwargs):
-        return AsrWhisperHandler(*args, model=model, executor=executor, info=info, **kwargs)
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        def handler_factory(*args, **kwargs):
+            return AsrWhisperHandler(*args, model=model, executor=executor, info=info, **kwargs)
 
-    server = AsyncServer.from_uri(f"tcp://{config.BIND_HOST}:{config.ASR_PORT}")
-    _LOGGER.info("ASR server listening on %s:%s", config.BIND_HOST, config.ASR_PORT)
-    await server.run(handler_factory)
+        server = AsyncServer.from_uri(f"tcp://{config.BIND_HOST}:{config.ASR_PORT}")
+        _LOGGER.info("ASR server listening on %s:%s", config.BIND_HOST, config.ASR_PORT)
+        await server.run(handler_factory)
 
 
 if __name__ == "__main__":

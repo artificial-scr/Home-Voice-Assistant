@@ -65,7 +65,7 @@ def _extract_sentences(buf: str) -> Tuple[List[str], str]:
     parts = _SENTENCE_END.split(buf)
     if len(parts) == 1:
         return [], buf
-    sentences = [s.strip() for s in parts[:-1] if len(s.strip()) >= _MIN_SENTENCE_CHARS]
+    sentences = [s.strip() for s in parts[:-1] if s.strip()]
     return sentences, parts[-1]
 
 

@@ -96,6 +96,7 @@ class AsrWhisperHandler(AsyncEventHandler):
         self._rate: int = _EXPECTED_RATE
         self._width: int = _EXPECTED_WIDTH
         self._channels: int = _EXPECTED_CHANNELS
+        self._format_ok: bool = True
 
     async def handle_event(self, event: Event) -> bool:
         if Describe.is_type(event.type):
@@ -107,20 +108,38 @@ class AsrWhisperHandler(AsyncEventHandler):
             self._rate = audio_start.rate
             self._width = audio_start.width
             self._channels = audio_start.channels
-            _LOGGER.debug("Audio stream started (%d Hz, %d-bit, %d ch)",
-                          self._rate, self._width * 8, self._channels)
+
+            if (self._rate, self._width, self._channels) != (
+                _EXPECTED_RATE, _EXPECTED_WIDTH, _EXPECTED_CHANNELS
+            ):
+                _LOGGER.error(
+                    "Unsupported audio format: %d Hz / %d-bit / %d ch. "
+                    "Expected %d Hz / %d-bit / 1 ch. "
+                    "Transcription will be skipped for this utterance.",
+                    self._rate, self._width * 8, self._channels,
+                    _EXPECTED_RATE, _EXPECTED_WIDTH * 8,
+                )
+                self._format_ok = False
+            else:
+                self._format_ok = True
+                _LOGGER.debug("Audio stream started (%d Hz, %d-bit, %d ch)",
+                              self._rate, self._width * 8, self._channels)
 
         elif AudioChunk.is_type(event.type):
             chunk = AudioChunk.from_event(event)
             self._audio_buf.append(chunk.audio)
 
         elif AudioStop.is_type(event.type):
+            if not self._format_ok:
+                self._audio_buf = []
+                return True
+
             if not self._audio_buf:
                 _LOGGER.warning("AudioStop received with no audio — skipping.")
                 return True
 
             raw = b"".join(self._audio_buf)
-            total_s = len(raw) / (_EXPECTED_RATE * _EXPECTED_WIDTH * _EXPECTED_CHANNELS)
+            total_s = len(raw) / (self._rate * self._width * self._channels)
             _LOGGER.info("Transcribing %.1f s of audio...", total_s)
 
             audio_f32 = _pcm_to_float(raw)

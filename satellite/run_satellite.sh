@@ -44,6 +44,12 @@ if [[ -z "$BRAIN_IP" ]]; then
   exit 1
 fi
 
+# --- Verify nc is available (used to poll openwakeword port) ---
+if ! command -v nc &>/dev/null; then
+  echo "ERROR: 'nc' (netcat) not found. Install it with your package manager (e.g. apt install netcat-openbsd)."
+  exit 1
+fi
+
 # --- Activate venv ---
 VENV="$HOME/satellite/.venv"
 if [[ ! -f "$VENV/bin/activate" ]]; then

@@ -114,7 +114,16 @@ async def run_pipeline(llm: LLMClient) -> None:
         _LOGGER.info("Connected. Waiting for wake word...")
 
         while True:
-            event: Event | None = await client.read_event()
+            try:
+                event: Event | None = await asyncio.wait_for(
+                    client.read_event(), timeout=config.SATELLITE_READ_TIMEOUT
+                )
+            except asyncio.TimeoutError:
+                _LOGGER.error(
+                    "No event from satellite in %.0f s — assuming stale connection.",
+                    config.SATELLITE_READ_TIMEOUT,
+                )
+                break
             if event is None:
                 _LOGGER.warning("Satellite disconnected.")
                 break

@@ -36,6 +36,8 @@ LLM_API_KEY  = os.getenv("LLM_API_KEY",  "EMPTY")  # vLLM accepts any non-empty 
 # Satellite Wyoming server (pipeline.py connects here)
 SATELLITE_HOST = os.getenv("SATELLITE_HOST", "127.0.0.1")
 SATELLITE_PORT = int(os.getenv("SATELLITE_PORT", "10700"))
+# How long to wait for the next event before treating the connection as dead
+SATELLITE_READ_TIMEOUT = float(os.getenv("SATELLITE_READ_TIMEOUT", "30"))
 
 # Piper TTS — overridable via PIPER_MODEL_PATH
 # Default matches the path created by install_brain.sh

@@ -180,6 +180,7 @@ All LLM settings are overridable via environment variables — no code change ne
 |---|---|---|
 | `SATELLITE_HOST` | `127.0.0.1` | IP of the Raspberry Pi |
 | `SATELLITE_PORT` | `10700` | Wyoming port on the satellite |
+| `SATELLITE_READ_TIMEOUT` | `30` | Seconds to wait for a satellite event before reconnecting |
 
 Example — brain and satellite on different machines:
 

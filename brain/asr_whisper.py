@@ -145,7 +145,7 @@ class AsrWhisperHandler(AsyncEventHandler):
 
             audio_f32 = _pcm_to_float(raw)
 
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             text = await loop.run_in_executor(
                 self._executor,
                 _transcribe,

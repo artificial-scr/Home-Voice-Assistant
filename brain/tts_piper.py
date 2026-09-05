@@ -113,7 +113,7 @@ class TtsPiperHandler(AsyncEventHandler):
                 return True
 
             _LOGGER.info("Synthesizing: %r", text)
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             raw, rate, width, channels = await loop.run_in_executor(
                 self._executor, _synthesize, self._voice, text
             )

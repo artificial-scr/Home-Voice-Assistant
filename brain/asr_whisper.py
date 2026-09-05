@@ -139,6 +139,7 @@ class AsrWhisperHandler(AsyncEventHandler):
                 return True
 
             raw = b"".join(self._audio_buf)
+            raw = raw[:len(raw) & ~1]  # ensure even byte count for 16-bit unpack
             total_s = len(raw) / (self._rate * self._width * self._channels)
             _LOGGER.info("Transcribing %.1f s of audio...", total_s)
 

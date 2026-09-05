@@ -6,7 +6,8 @@ sudo apt update
 sudo apt install -y \
   python3 python3-venv python3-pip \
   portaudio19-dev libatlas-base-dev \
-  ffmpeg alsa-utils git
+  ffmpeg alsa-utils git \
+  netcat-openbsd
 
 mkdir -p ~/satellite
 cd ~/satellite

@@ -77,8 +77,8 @@ echo "[satellite] Starting wyoming-openwakeword (wake word: $WAKE_WORD) on port 
   --uri "tcp://127.0.0.1:$WAKEWORD_PORT" \
   --preload-model "$WAKE_WORD" &
 
-# Give it a moment to bind
-sleep 2
+echo "[satellite] Waiting for wyoming-openwakeword to bind on port $WAKEWORD_PORT..."
+until nc -z 127.0.0.1 "$WAKEWORD_PORT" 2>/dev/null; do sleep 0.2; done
 
 # --- Start wyoming-satellite ---
 SAT_DIR="$HOME/satellite/wyoming-satellite"

@@ -48,7 +48,7 @@ _RECONNECT_DELAY = 5.0
 
 # Sentence boundary: .!? followed by whitespace.
 # Simple but sufficient — the system prompt keeps responses short.
-_SENTENCE_END = re.compile(r'(?<=[.!?])\s+')
+_SENTENCE_END = re.compile(r'(?<=[.!?])\s+(?=[A-Z\d])')
 
 # Don't synthesize fragments shorter than this (avoids sending "OK." alone
 # when the model starts with an acknowledgement before the real answer).

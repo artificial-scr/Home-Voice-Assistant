@@ -65,14 +65,14 @@ class LLMClient:
             {"role": "user",   "content": user_text},
         ]
         _LOGGER.debug("→ LLM (stream)  %r", user_text)
-        stream = await self._client.chat.completions.create(
+        async with await self._client.chat.completions.create(
             model=self._model,
             messages=messages,
             temperature=0.7,
             max_tokens=256,
             stream=True,
-        )
-        async for chunk in stream:
-            delta = chunk.choices[0].delta.content
-            if delta:
-                yield delta
+        ) as stream:
+            async for chunk in stream:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    yield delta

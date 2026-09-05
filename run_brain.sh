@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Launch all brain services: ASR + TTS + pipeline controller.
-# Swap in real implementations as each step completes:
-#   Step 4: real ASR (asr_whisper.py)   — TTS still a stub
-#   Step 5: + pipeline controller (pipeline.py)
-#   Step 6: real TTS (tts_piper.py)     — both real
+# Launch all brain services: ASR + TTS (Piper) + pipeline controller.
+# Steps 4-6 complete: real ASR, real TTS, LLM pipeline all active by default.
 #
 # Run from the repo root inside the brain venv:
 #   source ~/brain/.venv/bin/activate
@@ -22,7 +19,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 USE_STUB_ASR=false
-USE_STUB_TTS=true   # TTS stub is still the default until Step 6
+USE_STUB_TTS=false
 RUN_PIPELINE=true
 
 while [[ $# -gt 0 ]]; do

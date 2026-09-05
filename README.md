@@ -132,7 +132,7 @@ over the Wyoming pipe.
 
 ---
 
-### Step 2 — Full stack (Steps 4 + 5, TTS still stubbed)
+### Step 2 — Full stack (Steps 4 + 5 + 6)
 
 On the brain, start vLLM in one terminal:
 
@@ -156,8 +156,8 @@ On the satellite:
 bash satellite/run_satellite.sh --brain-ip BRAIN_IP
 ```
 
-Trigger the wake word → speak → the brain logs the transcript and the LLM reply.
-The satellite plays 0.5 s of silence (TTS stub) while Step 6 is pending.
+Trigger the wake word → speak → the brain transcribes, calls the LLM, and the satellite
+speaks the reply aloud via Piper TTS.
 
 ---
 
@@ -172,6 +172,7 @@ All LLM settings are overridable via environment variables — no code change ne
 | `LLM_BASE_URL` | `http://localhost:8000/v1` | vLLM OpenAI-compatible endpoint |
 | `LLM_MODEL` | `Qwen/Qwen3-8B-AWQ` | Model name as served by vLLM |
 | `LLM_API_KEY` | `EMPTY` | API key (vLLM ignores the value; set for proxies) |
+| `PIPER_MODEL_PATH` | `~/brain/models/piper/en_US-lessac-medium.onnx` | Full path to the Piper `.onnx` model |
 
 ### Satellite connection (env vars)
 
@@ -247,7 +248,7 @@ bash satellite/run_satellite.sh --brain-ip BRAIN_IP --mic-device 2
 | 3 — Wake word | ✅ | openWakeWord launch script, mic auto-detection |
 | 4 — faster-whisper ASR | ✅ | Real speech-to-text on brain |
 | 5 — LLM integration | ✅ | Transcript → vLLM → logged reply |
-| 6 — Piper TTS | 🔲 | Spoken response on satellite speaker |
+| 6 — Piper TTS | ✅ | Spoken response on satellite speaker |
 | 7 — Streaming TTS | 🔲 | Per-sentence TTS before full LLM response |
 | 8 — Tool registry | 🔲 | Web search, calculator, timer |
 | 9 — Conversation history | 🔲 | Rolling window, token-capped |

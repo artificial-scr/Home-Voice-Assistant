@@ -37,6 +37,9 @@ LLM_API_KEY  = os.getenv("LLM_API_KEY",  "EMPTY")  # vLLM accepts any non-empty 
 SATELLITE_HOST = os.getenv("SATELLITE_HOST", "127.0.0.1")
 SATELLITE_PORT = int(os.getenv("SATELLITE_PORT", "10700"))
 
-# Piper voice model
-PIPER_VOICE = "en_US-lessac-medium"
-PIPER_MODELS_DIR = "models/piper"
+# Piper TTS — overridable via PIPER_MODEL_PATH
+# Default matches the path created by install_brain.sh
+PIPER_MODEL_PATH = os.getenv(
+    "PIPER_MODEL_PATH",
+    os.path.expanduser("~/brain/models/piper/en_US-lessac-medium.onnx"),
+)

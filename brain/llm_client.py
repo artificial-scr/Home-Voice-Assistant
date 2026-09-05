@@ -50,7 +50,7 @@ class LLMClient:
             temperature=0.7,
             max_tokens=256,
         )
-        reply = response.choices[0].message.content or ""
+        reply = response.choices[0].message.content if response.choices else ""
         _LOGGER.debug("← LLM  %r", reply)
         return reply.strip()
 
@@ -73,6 +73,8 @@ class LLMClient:
             stream=True,
         ) as stream:
             async for chunk in stream:
+                if not chunk.choices:
+                    continue
                 delta = chunk.choices[0].delta.content
                 if delta:
                     yield delta

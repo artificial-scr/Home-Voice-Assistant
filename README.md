@@ -249,7 +249,7 @@ bash satellite/run_satellite.sh --brain-ip BRAIN_IP --mic-device 2
 | 4 — faster-whisper ASR | ✅ | Real speech-to-text on brain |
 | 5 — LLM integration | ✅ | Transcript → vLLM → logged reply |
 | 6 — Piper TTS | ✅ | Spoken response on satellite speaker |
-| 7 — Streaming TTS | 🔲 | Per-sentence TTS before full LLM response |
+| 7 — Streaming TTS | ✅ | Per-sentence TTS before full LLM response |
 | 8 — Tool registry | 🔲 | Web search, calculator, timer |
 | 9 — Conversation history | 🔲 | Rolling window, token-capped |
 | 10 — Remaining tools | 🔲 | Notes, weather |

@@ -1,14 +1,20 @@
 """
-Brain pipeline controller — Steps 5 & 6.
+Brain pipeline controller — Steps 5, 6 & 7.
 
 Connects to the wyoming-satellite as a Wyoming client and drives the
 full voice assistant loop:
 
-  Detection → Transcript → LLM → Synthesize → satellite plays TTS audio
+  Detection → Transcript → LLM (streaming) → Synthesize per sentence
+                                           → satellite plays TTS audio
 
-The satellite handles its own ASR (via --asr-uri → asr_whisper.py) and
-speaker playback (via --tts-uri → tts_piper.py). This controller handles
-only the Transcript → LLM → Synthesize orchestration.
+Streaming TTS (Step 7): LLM tokens are accumulated into a buffer. Each
+time a sentence boundary is detected the sentence is sent as a Synthesize
+event immediately — Piper starts speaking sentence 1 while the LLM is
+still generating sentence 2, cutting perceived latency significantly.
+
+The satellite handles ASR (--asr-uri → asr_whisper.py) and speaker
+playback (--tts-uri → tts_piper.py). This controller handles only the
+Transcript → LLM → Synthesize orchestration.
 
 Run:
     python brain/pipeline.py
@@ -17,7 +23,9 @@ Run:
 
 import asyncio
 import logging
+import re
 import sys
+from typing import List, Tuple
 
 from wyoming.asr import Transcript
 from wyoming.client import AsyncTcpClient
@@ -36,23 +44,62 @@ logging.basicConfig(
 )
 _LOGGER = logging.getLogger(__name__)
 
-# Reconnect delay if the satellite connection drops
 _RECONNECT_DELAY = 5.0
+
+# Sentence boundary: .!? followed by whitespace.
+# Simple but sufficient — the system prompt keeps responses short.
+_SENTENCE_END = re.compile(r'(?<=[.!?])\s+')
+
+# Don't synthesize fragments shorter than this (avoids sending "OK." alone
+# when the model starts with an acknowledgement before the real answer).
+_MIN_SENTENCE_CHARS = 8
+
+
+def _extract_sentences(buf: str) -> Tuple[List[str], str]:
+    """Split buf at sentence boundaries.
+
+    Returns (complete_sentences, remaining_buffer). Each item in
+    complete_sentences ends with punctuation and is ready for TTS.
+    remaining_buffer has no trailing sentence boundary yet.
+    """
+    parts = _SENTENCE_END.split(buf)
+    if len(parts) == 1:
+        return [], buf
+    sentences = [s.strip() for s in parts[:-1] if len(s.strip()) >= _MIN_SENTENCE_CHARS]
+    return sentences, parts[-1]
+
+
+async def _synthesize_sentence(sentence: str, client: AsyncTcpClient) -> None:
+    """Send one sentence to the satellite for TTS playback."""
+    _LOGGER.info("TTS ← %r", sentence)
+    await client.write_event(Synthesize(text=sentence).event())
 
 
 async def handle_transcript(
     text: str, llm: LLMClient, client: AsyncTcpClient
-) -> str:
-    """Transcript → LLM → Synthesize sent to satellite."""
+) -> None:
+    """Transcript → streaming LLM → per-sentence Synthesize events."""
     _LOGGER.info("Transcript: %r", text)
-    reply = await llm.chat(text)
-    _LOGGER.info("LLM reply:  %r", reply)
 
-    # Send Synthesize to the satellite; it calls --tts-uri (tts_piper.py)
-    # and plays the resulting audio on the speaker.
-    await client.write_event(Synthesize(text=reply).event())
+    buf = ""
+    full_reply_parts: List[str] = []
 
-    return reply
+    async for chunk in llm.stream_chat(text):
+        buf += chunk
+        full_reply_parts.append(chunk)
+        sentences, buf = _extract_sentences(buf)
+        for sentence in sentences:
+            await _synthesize_sentence(sentence, client)
+
+    # Flush any remaining text (last sentence may lack trailing whitespace)
+    tail = buf.strip()
+    if len(tail) >= _MIN_SENTENCE_CHARS:
+        await _synthesize_sentence(tail, client)
+    elif tail:
+        # Too short to synthesise on its own — append to log only
+        full_reply_parts.append(tail)
+
+    _LOGGER.info("LLM reply (full): %r", "".join(full_reply_parts))
 
 
 async def run_pipeline(llm: LLMClient) -> None:

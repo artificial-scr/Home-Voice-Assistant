@@ -46,6 +46,11 @@ def _load_voice(model_path: str) -> PiperVoice:
             f"Piper model not found: {model_path}\n"
             "Run install_brain.sh or set PIPER_MODEL_PATH."
         )
+    if not os.path.isfile(config_path):
+        raise FileNotFoundError(
+            f"Piper config not found: {config_path}\n"
+            "Run install_brain.sh or set PIPER_MODEL_PATH to the .onnx file path."
+        )
     _LOGGER.info("Loading Piper model: %s", model_path)
     return PiperVoice.load(model_path, config_path=config_path)
 

@@ -1,0 +1,9 @@
+# Brain service dependencies
+# Install inside the venv created by install_brain.sh:
+#   source ~/brain/.venv/bin/activate && pip install -r requirements-brain.txt
+
+wyoming>=1.5.4
+faster-whisper>=1.0.3
+piper-tts>=1.2.0
+vllm>=0.5.0        # pinned loosely; tighten after VRAM validation (step 1)
+openai>=1.0.0      # for talking to the vLLM OpenAI-compatible endpoint

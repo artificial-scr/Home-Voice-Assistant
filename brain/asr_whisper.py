@@ -21,7 +21,8 @@ from typing import List, Optional
 
 import numpy as np
 from faster_whisper import WhisperModel
-from wyoming.asr import AsrModel, AsrProgram, Transcript
+from wyoming.asr import Transcript
+from wyoming.info import AsrModel, AsrProgram
 from wyoming.audio import AudioChunk, AudioStart, AudioStop
 from wyoming.event import Event
 from wyoming.info import Attribution, Describe, Info

@@ -82,6 +82,7 @@ def _build_info(voice_name: str) -> Info:
                     TtsVoice(
                         name=voice_name,
                         description=voice_name,
+                        version="1.0.0",
                         attribution=Attribution(name="rhasspy", url=""),
                         installed=True,
                         languages=["en"],
